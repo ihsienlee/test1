@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>JavaScriptTest</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="https://rawgithub.com/mrdoob/three.js/master/build/three.js"></script> <!-- Get the latest version of the Three.js library. -->
+<script src="three.min.js"></script>
+</head>
+<body style="margin:0;padding:0;overflow: hidden;" onload="init()">
+	<canvas id="canvas"></canvas>
+<!--<input type="button" id="animation" value="animation" style="position:absolute;left:10px;top:10px;font-size:20px" onclick="toggleAnimation()"/>-->
+<script>
+	// get the window size
+	var WIDTH = window.innerWidth;
+ 	var HEIGHT = window.innerHeight;
+	// global variables
+	var renderer, scene, camera;
+	var mesh;
+	var position;
+	var imgData, imgNode;
+	var getImageData;
+    function init(){
+		renderer = new THREE.WebGLRenderer({canvas: $("#canvas").get(0), antialias:true, alpha:true ,preserveDrawingBuffer:true});
+		renderer.setSize(WIDTH, HEIGHT);// set the canvas size
+		
+		scene = new THREE.Scene();// create a scene
+		
+		var pointLight = new THREE.PointLight(0xFFFFFF);// create a point light
+		// set its position
+		pointLight.position.x = 10;
+		pointLight.position.y = 50;
+		pointLight.position.z = 130;
+		scene.add(pointLight);// add to the scene
+		
+		// set some camera attributes
+		var VIEW_ANGLE = 45,
+		ASPECT = WIDTH / HEIGHT,
+		NEAR = 1,
+		FAR = 1000;
+
+
+		camera = new THREE.PerspectiveCamera(VIEW_ANGLE,ASPECT,NEAR,FAR); // create the camera		
+		camera.position.z = 30;		// the camera starts at 0,0,0, so pull it back
+		scene.add(camera);                                                 // add the camera to the scene	
+		// create a WebGL renderer, using an existing dom element (id=canvas) as canvas, and enable antialias
+
+		
+		var loader = new THREE.BufferGeometryLoader();
+		loader.load( "pressuretest3.json", function( geometry ) {
+					geometry.computeVertexNormals();
+					geometry.normalizeNormals();
+					
+					var material = new THREE.MeshLambertMaterial( {
+						side: THREE.DoubleSide,
+						specular: 0xF5F5F5,
+						color: 0xF5F5F5,
+						ambient : 0xFFFFFF,
+						shininess: 5,
+						vertexColors: THREE.VertexColors
+		            });
+					mesh = new THREE.Mesh ( geometry, material );
+                    geometry.computeBoundingBox();
+					var boundingBox = geometry.boundingBox;
+					var center = boundingBox.center();
+					if ( position === undefined ) {
+		                 position = new THREE.Vector3(center.x, center.y, center.z);
+					}
+		            scene.add ( mesh );
+					});
+		render();
+		setTimeout(save,2000);//wait 2 Sec
+	}
+	
+	function render(){
+		renderer.render(scene, camera);
+		requestAnimationFrame(render);
+		}
+		
+	function save(){
+		imgData = renderer.domElement.toDataURL();
+        var link = document.createElement("a");
+        link.download = 'threejs.png';
+        link.href = imgData;
+        link.click();
+	}
+</script>
+</body>
+</html>
